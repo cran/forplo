@@ -42,6 +42,7 @@
 #' @param diamond.line Shows a dotted vertical line through the last diamond. Set to FALSE to disable.
 #' @param add.columns A data.frame of nrow(mat) with additional columns to add to the right of the plot.
 #' @param add.colnames A character vector of length ncol(add.columns) with column labels for these columns.
+#' @param column.spacing A constant that controls the horizontal spacing between added columns.
 #' @param right.bar Set to TRUE to show a vertical bar directly to the left of the estimates.
 #' @param rightbar.ticks Controls the tick marks on the right axis.
 #' @param left.bar Set to FALSE to remove the horizontal bar on the left axis.
@@ -132,6 +133,7 @@ forplo <- function(mat,
                    diamond.line=TRUE,
                    add.columns=NULL,
                    add.colnames=NULL,
+                   column.spacing=3,
                    right.bar=FALSE,
                    rightbar.ticks=0,
                    left.bar=TRUE,
@@ -201,14 +203,9 @@ forplo <- function(mat,
   # if row.labels are given, replace rownames
   if(!is.null(row.labels)){
     if(length(row.labels)!=nrow(mat)){stop('The length of row.labels should be equal to the number of rows of mat.')}
-    if(any(duplicated(row.labels))==TRUE){
-      dups <- which(duplicated(row.labels))
-      row.labels2 <- make.unique(row.labels)
-      ec <- as.numeric(gsub('.*\\.','',row.labels2)[dups])
-      row.labels[dups] <- paste0(row.labels[dups],
-                                 unlist(lapply(ec,function(x) paste0(rep(' ',x),collapse=''))))
-    }
-    rownames(mat) <- row.labels}
+    row.labels2 <- seq_along(row.labels)
+    rownames(mat) <- row.labels2
+  }
   # function to count number of characters
   charcount <- function(x){
     length(unlist(strsplit(as.character(x),'')))
@@ -330,13 +327,35 @@ forplo <- function(mat,
     }
   }
   if(sort==TRUE){
-    if(!is.null(groups)){stop('sort is not compatible with groups.')}
     if(!is.null(diamond)){stop('sort is not compatible with diamond.')}
-    sort.index <- order(mat[,1],decreasing=T)
+    if(!is.null(groups)){
+      # sort within groups
+      grind <- !is.na(mat[,1])
+      dind <- diff(grind)
+      grp.count <- 0
+      grp.vec <- rep(0, length(grind))
+      for(i in 2:length(grind)){
+        if(grind[i] == 1 & dind[(i-1)] == 1){
+          grp.count <- grp.count + 1
+        }
+        grp.vec[i] <- grp.count
+        if(grind[i] == 0) grp.vec[i] <- 0
+      }
+      grp.sort <- 1:length(grind)
+      for(g in 1:length(unique(groups))){
+        grp.sort[which(grp.vec == g)] <- which(grp.vec == g)[order(mat[grp.vec == g,1], decreasing=TRUE)]
+      }
+      sort.index <- grp.sort
+      add.columns2 <- data.frame(matrix(nrow=nrow(mat),ncol=ncol(add.columns)))
+      add.columns2[select,] <- add.columns
+      add.columns <- add.columns2
+    }
+    if(is.null(groups)){sort.index <- order(mat[,1],decreasing=T)}
     mat <- mat[sort.index,]
     pval <- pval[sort.index]
     fill.colors <- fill.colors[sort.index]
     scaledot.by <- scaledot.by[sort.index]
+    add.columns <- add.columns[sort.index,]
   }
   # set par
   margin.bottom <- ifelse((!is.null(favorlabs)|
@@ -476,7 +495,15 @@ forplo <- function(mat,
     graphics::axis(2,at=seq(lHR,1),las=2,lwd=1,labels=FALSE,lwd.ticks=leftbar.ticks,tick=left.bar)
   }
   # write row names and group labels (bold)
-  graphics::axis(2,at=seq(lHR,1),labels=rownames(mat),las=2,family=font,
+  if(is.null(row.labels)){
+    row.labels <- rownames(mat)
+  }
+  else{
+    row.labels <- row.labels[as.numeric(rownames(mat))]
+  }
+  graphics::axis(2,at=seq(lHR,1),
+                 labels=row.labels,
+                 las=2,family=font,
        lwd=0,lwd.ticks=FALSE,tick=FALSE,
        hadj=ifelse(left.align==TRUE,0,NA),
        line=ifelse(left.align==TRUE,margin.left-2.5,NA))
@@ -498,11 +525,12 @@ forplo <- function(mat,
                                              sprintf('%.2f',Round(stats::na.omit(mat[,3]),2)),']'),las=2,line=6,tick=F,family=font)
   # add additional columns
   if(!is.null(add.columns)){
+    if(sort){add.columns <- add.columns[select,]}
     startline=9
     for(k in 1:ncol(data.frame(add.columns))){
       if(!is.null(add.colnames)){graphics::axis(4,at=lHR+1,labels=add.colnames[k],las=2,line=startline,tick=F,font=2,family=font)}
       graphics::axis(4,at=seq(lHR,1)[select],labels=data.frame(add.columns)[,k],las=2,line=startline,tick=F,family=font)
-      startline <- startline+3
+      startline <- startline+column.spacing
     }
   }
   # add p-values

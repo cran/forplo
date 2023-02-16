@@ -1,10 +1,10 @@
-2869b2e200d9d4be1900fff0409da179 *DESCRIPTION
+867f9d93cf83d7b9dfc655f68ba8afd5 *DESCRIPTION
 7281e8b40e6a8c1c805c8e102aa60816 *NAMESPACE
-9294e0e6dfede438a8b18295c06ab568 *NEWS.md
-5d6a40a0081fe72d269d8dc4570bb21d *R/forplo.R
+74460af860bdb5d80cf8660958e62697 *NEWS.md
+8ff8cb5a112e6af4d28e4cebcc7ec465 *R/forplo.R
 90117f05faa81a5747ad39e1d6a34216 *build/vignette.rds
 d90a4e08fd6035cdad9b8e1ce8991fc5 *inst/doc/forplo_vignette.R
 7b5d2cb612260227f044d166d4d09fa3 *inst/doc/forplo_vignette.Rmd
-ed0cffb8136b5839953b9513cdb11c08 *inst/doc/forplo_vignette.html
-5baa34d829bc003aa4dcef68a944777d *man/forplo.Rd
+7f56f4d27fbd7cd6b159bbf81cabf11c *inst/doc/forplo_vignette.html
+cb4fcbd5f3414a23653eabec366e6a80 *man/forplo.Rd
 7b5d2cb612260227f044d166d4d09fa3 *vignettes/forplo_vignette.Rmd
